@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { resolve } from '$app/paths';
+	import { asset, resolve } from '$app/paths';
 	import type { DayCard } from '#lib/content.ts';
 	import { gsap, prefersMotion, scrollToTarget, ScrollTrigger, seeded } from '#lib/motion.ts';
 
@@ -10,6 +10,13 @@
 	let track = $state<HTMLElement>();
 	let stringPath = $state<SVGPathElement>();
 	let currentDay = $state(1);
+
+	/** Photos were shuffled once into static/prints, one file per day. */
+	const PRINT_COUNT = 30;
+	const printFor = (day: number) =>
+		day <= PRINT_COUNT
+			? asset(`prints/day-${String(day).padStart(2, '0')}.webp` as Parameters<typeof asset>[0])
+			: undefined;
 
 	const slots = $derived.by(() => {
 		const random = seeded(12);
@@ -183,6 +190,23 @@
 	});
 </script>
 
+{#snippet photo(day: number)}
+	{@const src = printFor(day)}
+	{#if src}
+		<span class="photo">
+			<img
+				{src}
+				alt=""
+				width="720"
+				height="900"
+				loading="lazy"
+				decoding="async"
+				draggable="false"
+			/>
+		</span>
+	{/if}
+{/snippet}
+
 <section bind:this={root} id="days" class="line" style="--count:{days.length}">
 	<div class="stage">
 		<header>
@@ -212,19 +236,25 @@
 									href={resolve('/day/[day]', { day: String(slot.day) })}
 									onclick={liftCard}
 								>
-									<span class="numeral"><span class="sr-only">Day </span>{slot.day}</span>
+									{@render photo(slot.day)}
 									<span class="open hand" aria-hidden="true">read it</span>
-									<span class="text">
-										<span class="title">{slot.title}</span>
-										<span class="excerpt">{slot.line}</span>
+									<span class="caption">
+										<span class="numeral"><span class="sr-only">Day </span>{slot.day}</span>
+										<span class="text">
+											<span class="title">{slot.title}</span>
+											<span class="excerpt">{slot.line}</span>
+										</span>
 									</span>
 								</a>
 							{:else}
 								<div class="card blank" style="--tilt:{slot.tilt}deg">
-									<span class="numeral"><span class="sr-only">Day </span>{slot.day}</span>
-									<span class="text">
-										<span class="title">{slot.prompt}</span>
-										<span class="excerpt">Still being written</span>
+									{@render photo(slot.day)}
+									<span class="caption">
+										<span class="numeral"><span class="sr-only">Day </span>{slot.day}</span>
+										<span class="text">
+											<span class="title">{slot.prompt}</span>
+											<span class="excerpt">Still being written</span>
+										</span>
 									</span>
 								</div>
 							{/if}
@@ -349,10 +379,9 @@
 		position: relative;
 		display: flex;
 		flex-direction: column;
-		justify-content: space-between;
-		gap: 1.5rem;
-		min-height: clamp(23rem, 58svh, 34rem);
-		padding: 1.5rem 1.5rem 1.6rem;
+		gap: 0.9rem;
+		height: clamp(25rem, 62svh, 37rem);
+		padding: 0.7rem 0.7rem 1rem;
 		color: var(--ink);
 		background: var(--paper);
 		rotate: var(--tilt);
@@ -369,11 +398,45 @@
 		scale: 1.025;
 	}
 
+	.photo {
+		position: relative;
+		flex: 1;
+		min-height: 0;
+		overflow: clip;
+		background: var(--paper-shade);
+	}
+
+	.photo img {
+		position: absolute;
+		inset: 0;
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+		/* Most of these are portraits, so favour the top of the frame. */
+		object-position: 50% 26%;
+		transition: scale 0.9s var(--spring);
+		user-select: none;
+	}
+
+	a.card:hover .photo img,
+	a.card:focus-visible .photo img {
+		scale: 1.045;
+	}
+
+	.caption {
+		display: flex;
+		flex: none;
+		align-items: flex-start;
+		gap: 0.8rem;
+		padding-inline: 0.3rem;
+	}
+
 	.numeral {
+		flex: none;
 		font-family: var(--display);
 		font-variation-settings: 'opsz' 18;
-		font-size: clamp(6.5rem, 11vw, 10.5rem);
-		line-height: 0.86;
+		font-size: clamp(3.25rem, 4.6vw, 4.5rem);
+		line-height: 0.92;
 		letter-spacing: -0.04em;
 		font-variant-numeric: lining-nums;
 	}
@@ -386,10 +449,12 @@
 
 	.open {
 		position: absolute;
-		top: 1.5rem;
-		right: 1.25rem;
+		top: 1.3rem;
+		right: 1.3rem;
+		padding: 0 0.5rem 0.15rem;
+		background: var(--paper);
 		color: var(--accent-deep);
-		font-size: 2.1rem;
+		font-size: 1.75rem;
 		opacity: 0;
 		rotate: -6deg;
 		translate: 0 0.4rem;
@@ -414,12 +479,13 @@
 	.text {
 		display: flex;
 		flex-direction: column;
-		gap: 0.6rem;
+		gap: 0.3rem;
+		min-width: 0;
 	}
 
 	.title {
 		font-family: var(--display);
-		font-size: clamp(1.4rem, 1.9vw, 1.75rem);
+		font-size: clamp(1.15rem, 1.5vw, 1.4rem);
 		font-weight: 500;
 		line-height: 1.12;
 		letter-spacing: -0.012em;
@@ -433,9 +499,14 @@
 	}
 
 	.excerpt {
-		font-size: clamp(1.02rem, 1.2vw, 1.15rem);
+		display: -webkit-box;
+		overflow: hidden;
+		-webkit-box-orient: vertical;
+		-webkit-line-clamp: 2;
+		line-clamp: 2;
+		font-size: clamp(0.98rem, 1.1vw, 1.08rem);
 		font-style: italic;
-		line-height: 1.32;
+		line-height: 1.28;
 		color: var(--dim-on-paper);
 	}
 
@@ -447,6 +518,12 @@
 
 	.blank .excerpt {
 		color: var(--dim-on-ground);
+	}
+
+	/* Not written yet: the print is still developing. */
+	.blank .photo img {
+		opacity: 0.4;
+		filter: grayscale(1);
 	}
 
 	@media (prefers-reduced-motion: no-preference) {
