@@ -1,0 +1,141 @@
+@import 'tailwindcss';
+
+:root {
+	/* The page is the sweater in the photo. Paper is its handwritten notes, accent its dinosaur. */
+	--ground: #0e0b08;
+	--paper: #f4f2ec;
+	--paper-shade: #e6e3d9;
+	--ink: #14110e;
+	--dim-on-ground: #a8a39a;
+	--dim-on-paper: #5f5a52;
+	--accent: #e56a2b;
+	--accent-deep: #bf4a12;
+	--tint: #fbd8c3;
+
+	--display: 'Bodoni Moda Variable', 'Noto Serif Ethiopic', Didot, 'Times New Roman', serif;
+	--text: 'Newsreader Variable', 'Noto Serif Ethiopic', Georgia, serif;
+	--ui: 'Instrument Sans Variable', system-ui, sans-serif;
+	--hand: 'Reenie Beanie', 'Noto Serif Ethiopic', 'Segoe Print', cursive;
+
+	--gutter: clamp(1.25rem, 4vw, 3.5rem);
+	--spring: cubic-bezier(0.2, 0.9, 0.25, 1);
+}
+
+html {
+	background: var(--ground);
+	color: var(--paper);
+	font-family: var(--text);
+	font-size: 100%;
+	-webkit-font-smoothing: antialiased;
+}
+
+html.lenis,
+html.lenis body {
+	height: auto;
+}
+
+.lenis.lenis-smooth {
+	scroll-behavior: auto !important;
+}
+
+.lenis.lenis-stopped {
+	overflow: clip;
+}
+
+body {
+	min-height: 100svh;
+	overflow-x: clip;
+}
+
+::selection {
+	background: var(--accent);
+	color: var(--ink);
+}
+
+:focus-visible {
+	outline: 2px solid var(--accent);
+	outline-offset: 4px;
+	border-radius: 2px;
+}
+
+/* The red pen: an editor marking up the proofs. */
+.hand {
+	font-family: var(--hand);
+	font-weight: 400;
+	font-style: normal;
+	line-height: 1;
+	letter-spacing: 0;
+	color: var(--accent);
+}
+
+.sr-only {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	overflow: hidden;
+	clip-path: inset(50%);
+	white-space: nowrap;
+}
+
+.pill {
+	display: inline-block;
+	padding: 0.8em 1.4em;
+	border: 1px solid currentColor;
+	border-radius: 999px;
+	font-family: var(--ui);
+	font-size: 0.95rem;
+	font-weight: 500;
+	text-decoration: none;
+	transition:
+		background 0.3s,
+		color 0.3s;
+}
+
+.pill:hover,
+.pill:focus-visible {
+	background: var(--pill-fill, var(--paper));
+	color: var(--pill-text, var(--ink));
+}
+
+/* The load sequence places these. They reveal themselves if the script never runs. */
+@media (prefers-reduced-motion: no-preference) {
+	html.js .until-placed {
+		visibility: hidden;
+		animation: reveal-anyway 0s 5s forwards;
+	}
+}
+
+@keyframes reveal-anyway {
+	to {
+		visibility: visible;
+	}
+}
+
+/* Moving between pages: a quick dissolve, while the title flies to its new place. */
+@media (prefers-reduced-motion: no-preference) {
+	::view-transition-old(root) {
+		animation: fade-away 0.35s ease-in both;
+	}
+
+	::view-transition-new(root) {
+		animation: settle-in 0.55s var(--spring) both;
+	}
+
+	::view-transition-group(page-title) {
+		animation-duration: 0.6s;
+		animation-timing-function: var(--spring);
+	}
+}
+
+@keyframes fade-away {
+	to {
+		opacity: 0;
+	}
+}
+
+@keyframes settle-in {
+	from {
+		opacity: 0;
+		transform: translateY(3vh);
+	}
+}
