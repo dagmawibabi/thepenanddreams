@@ -193,7 +193,7 @@
 					<span class="turn-label">Day {data.next.day}</span>
 					<span class="turn-title">{data.next.title}</span>
 				</a>
-			{:else}
+			{:else if data.day < data.ruler.length}
 				<p class="turn-link forward waiting">
 					<span class="turn-label">Day {data.day + 1}</span>
 					<span class="turn-title">Still being written</span>

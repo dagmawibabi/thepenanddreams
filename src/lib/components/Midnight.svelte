@@ -117,7 +117,7 @@
 
 				<p class="note hand" aria-hidden="true" style="--row:{rows.indexOf(closest)}">
 					<span class="arrow"><Pen kind="arrow" /></span>
-					{numberWord(spare)} minutes!
+					{numberWord(spare)} {spare === 1 ? 'minute' : 'minutes'}!
 				</p>
 			</div>
 		</div>

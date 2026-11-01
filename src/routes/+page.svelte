@@ -16,7 +16,7 @@
 	let { data }: PageProps = $props();
 
 	const description = $derived(
-		`${author} is writing every day for ${data.days.length} days, one prompt at a time. Read every page so far.`
+		`${author} wrote every day for ${data.days.length} days, one prompt at a time. Read every page.`
 	);
 </script>
 
